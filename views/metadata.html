@@ -12,6 +12,7 @@
     </div>
   </div>
 
+  {{? movies.length }}
   <table class="list">
     <tr>
       <th width="13%">编号</th>
@@ -36,6 +37,9 @@
     </tr>
     {{~ }}
   </table>
+  {{?? }}
+  <div class="notfound">暂未发现任何媒体</div>
+  {{? }}
 
   <div class="paging">
     {{~ pager.ellipsisPages:pageIndex }}
@@ -307,7 +311,7 @@ function scanLibrary(btn) {
     btn.disable();
     const res = await Quick.http.post('/scan');
     btn.enable();
-    Quick.alert(`<b>扫描完成！</b><br><br>- 删除 ${res.deleted} 条元数据<br>- 新增 ${res.created} 部电影`, dlg => {
+    Quick.alert(`<b>扫描完成！</b><br><br>- 删除 ${res.deleted} 条元数据<br>- 新增 ${res.inserted} 部电影`, dlg => {
       dlg.hide();
       if (res.created || res.deleted) location.reload();
     });

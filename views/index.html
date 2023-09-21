@@ -4,7 +4,7 @@
 {{< content }}
 <main>
   <div class="covers">
-    {{~ movies:movie }}
+    {{? movies.length }}{{~ movies:movie }}
     <a class="cover" href="/{{= movie.code }}">
       <div class="thumb" style="background-image:url('/cover/{{= movie.id }}')">
         {{? movie.quality }}<div>{{= movie.quality }}</div>{{? }}
@@ -18,7 +18,9 @@
         <div class="title">{{= movie.title }}</div>
       </div>
     </a>
-    {{~ }}
+    {{~ }}{{?? }}
+    <div class="notfound">暂未发现任何媒体</div>
+    {{? }}
   </div>
 
   <div class="paging">

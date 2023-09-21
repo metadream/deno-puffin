@@ -23,9 +23,6 @@ export class MovieService {
         delete condition.p;
 
         const totalRecords = this.movieRepo.count(condition);
-        if (totalRecords === 0) {
-            throw { status: 404, message: "未找到相关电影" };
-        }
         const pager = paginate(totalRecords, config.PAGE_SIZE, pageIndex);
         const movies = this.movieRepo.search(condition, config.PAGE_SIZE, pager.startIndex);
         return { pager, movies };
@@ -101,21 +98,21 @@ export class MovieService {
         let totalFiles = 0;
 
         for (const file of files) {
-            totalFiles++;
             if (!file.isFile) continue;
-            if (!config.VIDEO_FILE_FORMATS.includes(path.extname(file.name))) continue;
-
-            const info = Deno.statSync(file.path);
-            const name = file.name.replace(/\.[^.]+$/, "");
-            const id = nanoid();
-            movies.push({
-                id,
-                code: id,
-                title: name,
-                videoPath: file.path,
-                videoSize: info.size,
-                createTime: info.mtime,
-            });
+            totalFiles++;
+            if (config.VIDEO_FILE_FORMATS.includes(path.extname(file.name))) {
+                const info = Deno.statSync(file.path);
+                const name = file.name.replace(/\.[^.]+$/, "");
+                const id = nanoid();
+                movies.push({
+                    id,
+                    code: id,
+                    title: name,
+                    videoPath: file.path,
+                    videoSize: info.size,
+                    createTime: info.mtime,
+                });
+            }
         }
 
         const inserted = this.movieRepo.insert(movies);
