@@ -1,0 +1,39 @@
+{{@ _layout.html }}
+{{< title }}登录 - {{= appName }}{{< }}
+{{< bodyClass }}layout-fit{{< }}
+
+{{< content }}
+<main>
+  <div class="front-panel">
+    <div class="quick-field">
+      <label>账号</label>
+      <input type="text" name="username" maxlength="20" data-message="请输入账号" required autofocus/>
+    </div>
+    <div class="quick-field">
+      <label>密码</label>
+      <input type="password" name="password" maxlength="20" data-message="请输入密码" required/>
+    </div>
+    <button>登录</button>
+  </div>
+</main>
+{{< }}
+
+<script>
+const $username = Quick.query('[name="username"]');
+const $password = Quick.query('[name="password"]');
+const $loginBtn = Quick.query('button');
+$loginBtn.onclick = login;
+$username.onkeyup = $password.onkeyup = function(e) {
+  if (e.keyCode === 13) login();
+};
+
+async function login() {
+  const data = Quick.form.getJsonObject('.front-panel');
+  if (!data) return;
+
+  $loginBtn.disable();
+  const res = await Quick.http.post('/login', data);
+  $loginBtn.enable();
+  if (res) location.reload();
+}
+</script>

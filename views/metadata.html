@@ -1,0 +1,322 @@
+{{@ _layout.html }}
+{{< title }}元数据 - {{= appName }}{{< }}
+
+{{< content }}
+<main>
+  <div class="headline">
+    <h2>元数据</h2>
+    <div class="buttons">
+      <button onclick="openSettings(this)">偏好设置</button>
+      <button onclick="generateCovers()" id="btnCovers">生成封面</button>
+      <button onclick="scanLibrary(this)">扫描媒体库</button>
+    </div>
+  </div>
+
+  <table class="list">
+    <tr>
+      <th width="13%">编号</th>
+      <th>标题</th>
+      {{? hasMetafield('producer') }}<th width="15%">制作商</th>{{? }}
+      {{? hasMetafield('region') }}<th width="9%">地区</th>{{? }}
+      {{? hasMetafield('quality') }}<th width="8%">画质</th>{{? }}
+      {{? hasMetafield('censorship') }}<th width="7%">审查</th>{{? }}
+      <th width="10%" style="text-align:right">大小</th>
+      <th width="4%"></th>
+    </tr>
+    {{~ movies:movie }}
+    <tr class="metadata" onclick='openEditor({{= JSON.stringify(movie) }})'>
+      <td>{{= movie.code }}</td>
+      <td>{{= movie.title }}</td>
+      {{? hasMetafield('producer') }}<td>{{= movie.producer || '' }}</td>{{? }}
+      {{? hasMetafield('region') }}<td>{{= region[movie.region] || '' }}</td>{{? }}
+      {{? hasMetafield('quality') }}<td>{{= quality[movie.quality] || '' }}</td>{{? }}
+      {{? hasMetafield('censorship') }}<td>{{= censorship[movie.censorship] || '' }}</td>{{? }}
+      <td style="text-align:right">{{= formatBytes(movie.videoSize) }}</td>
+      <td>{{? movie.starred }}<img src="/assets/circle.svg"/>{{? }}</td>
+    </tr>
+    {{~ }}
+  </table>
+
+  <div class="paging">
+    {{~ pager.ellipsisPages:pageIndex }}
+    {{? pageIndex == '...' }}<div>...</div>{{?? }}
+    <a class="{{= pageIndex == pager.pageIndex ? 'current' : '' }}" onclick="turnPage({{= pageIndex }})">{{= pageIndex }}</a>
+    {{? }}
+    {{~ }}
+  </div>
+
+</main>
+{{< }}
+
+<script>
+const preferences = {{= JSON.stringify(preferences) }};
+const $btnCovers = Quick.query('#btnCovers');
+$btnCovers.disable();
+polling();
+
+function openEditor(movie) {
+  const releaseDateField = {{= hasMetafield('releaseDate')}} ? `
+    <div class="quick-field">
+      <label>发行日期</label>
+      <input type="text" name="releaseDate" value="${movie.releaseDate || ''}"/>
+    </div>
+  ` : '';
+  const producerField = {{= hasMetafield('producer')}} ? `
+    <div class="quick-field">
+      <label>制作商</label>
+      <input type="text" name="producer" maxlength="30" value="${movie.producer || ''}"/>
+    </div>
+  ` : '';
+
+  const directorField = {{= hasMetafield('director')}} ? `
+    <div class="quick-field">
+      <label>导演</label>
+      <input type="text" name="director" maxlength="20" value="${movie.director || ''}"/>
+    </div>
+  ` : '';
+  const regionField = {{= hasMetafield('region')}} ? `
+    <div class="quick-field">
+      <label>地区</label>
+      <select name="region" data-message="请选择地区">
+        <option></option>
+        {{~ Object.keys(region):key }}
+          <option value="{{= key }}" ${movie.region=='{{=key}}'?'selected':''}>{{= region[key] }}</option>
+        {{~ }}
+      </select>
+    </div>
+  ` : '';
+  const qualityField = {{= hasMetafield('quality')}} ? `
+    <div class="quick-field">
+      <label>画质</label>
+      <select name="quality" data-message="请选择画质">
+        <option></option>
+        {{~ Object.keys(quality):key }}
+          <option value="{{= key }}" ${movie.quality=='{{=key}}'?'selected':''}>{{= quality[key] }}</option>
+        {{~ }}
+      </select>
+    </div>
+  ` : '';
+  const censorshipField =  {{= hasMetafield('censorship')}} ? `
+    <div class="quick-field">
+      <label>审查</label>
+      <select name="censorship" data-message="请选择审查">
+        <option></option>
+        {{~ Object.keys(censorship):key }}
+          <option value="{{= key }}" ${movie.censorship=='{{=key}}'?'selected':''}>{{= censorship[key] }}</option>
+        {{~ }}
+      </select>
+    </div>
+  ` : '';
+  const ratingField = {{= hasMetafield('rating')}} ? `
+    <div class="quick-field">
+      <label>分级</label>
+      <select name="rating" data-message="请选择分级">
+        <option></option>
+        {{~ Object.keys(rating):key }}
+          <option value="{{= key }}" ${movie.rating=='{{=key}}'?'selected':''}>{{= rating[key] }}</option>
+        {{~ }}
+      </select>
+    </div>
+  ` : '';
+  const seriesField = {{= hasMetafield('series')}} ? `
+    <div class="quick-field">
+      <label>系列</label>
+      <input type="text" name="series" maxlength="50" value="${movie.series || ''}"/>
+    </div>
+  ` : '';
+  const genresField = {{= hasMetafield('genres')}} ? `
+    <div class="quick-field single-column">
+      <label>类型</label>
+      <input type="text" placeholder="多种类型以逗号分隔" maxlength="100" name="genres" value="${movie.genres || ''}"/>
+    </div>
+  ` : '';
+  const starringField = {{= hasMetafield('starring')}} ? `
+    <div class="quick-field single-column">
+      <label>主演</label>
+      <input type="text" placeholder="多名主演以逗号分隔" maxlength="100" name="starring" value="${movie.starring || ''}"/>
+    </div>
+  ` : '';
+  Quick.dialog({
+    content: `<div class="editor">
+      <div class="fixed-form">
+        <div class="fields">
+          <div class="quick-field required">
+            <label>编号</label>
+            <input type="text" name="code" maxlength="20" value="${movie.code}" data-message="请输入编号" required/>
+            <input type="hidden" name="id" value="${movie.id}"/>
+          </div>
+          <div class="quick-field">
+            <label>创建日期</label>
+            <input type="text" value="${movie.createTime.substring(0,10)}" disabled/>
+          </div>
+        </div>
+        <div class="starred">
+          <div>收藏</div>
+          <label class="quick-switch">
+            <input type="checkbox" name="starred" ${movie.starred?'checked':''}><i></i>
+          </label>
+        </div>
+        <div class="uploader">
+          <div onclick="Quick.query('#file').click()" style="background-image:url('/cover/${movie.id}')">
+            <input type="file" id="file" accept="image/\*" onchange="preview(this.files[0])"/>
+            <span>上传封面</span>
+          </div>
+        </div>
+      </div>
+      <div class="fields">
+        ${releaseDateField} ${producerField} ${directorField} ${regionField}
+        ${qualityField} ${censorshipField} ${ratingField} ${seriesField}
+        <div class="quick-field required single-column">
+          <label>标题</label>
+          <input type="text" name="title" value="${movie.title}" data-message="请输入标题" required/>
+        </div>
+        ${genresField} ${starringField}
+        <div class="quick-field single-column">
+          <label>视频路径</label>
+          <input type="text" name="videoPath" value="${movie.videoPath}" disabled/>
+        </div>
+      </div>
+    </div>`,
+    onload: (dlg) => {
+      const $date = dlg.query('[name="releaseDate"]');
+      if ($date) new Quick.DatePicker($date);
+    },
+    buttons: [{
+      label: '取消'
+    }, {
+      label: '保存',
+      type: 'primary',
+      onclick: async function(dlg, btn) {
+        const data = Quick.form.getJsonObject(dlg);
+        if (!data) return;
+
+        data.starred = dlg.query('[name="starred"]:checked') ? 1 : 0;
+        data.coverImageData = window.coverImageData;
+        btn.disable();
+        const res = await Quick.http.put('/metadata', data);
+        btn.enable();
+        if (res) location.reload();
+      }
+    }]
+  });
+}
+
+function preview(image) {
+  if (!image) return;
+  const reader = new FileReader();
+  reader.readAsDataURL(image);
+  reader.onload = function() {
+    const container = Quick.query('.uploader>div');
+    container.style.backgroundImage = `url(${this.result})`;
+    window.coverImageData = this.result;
+  }
+}
+
+function openSettings(btn) {
+  Quick.dialog({
+    content: `<div class="prefer" style="width:400px">
+      <div class="quick-field">
+        <label>管理员账号</label>
+        <input type="text" name="username" maxlength="20" placeholder="无需修改则留空"/>
+      </div>
+      <div class="quick-field">
+        <label>管理员密码</label>
+        <input type="password" name="password" maxlength="20" placeholder="无需修改则留空"/>
+      </div>
+      <div class="quick-field required">
+        <label>媒体库路径</label>
+        <input type="hidden" name="origLibrary" value="${preferences.library}"/>
+        <input type="text" name="library" maxlength="100" data-message="请输入媒体库路径" value="${preferences.library}" required/>
+      </div>
+      <div style="margin-top:20px">
+        可选元数据属性<br>
+        <span class="tiny-title">勾选项将作为媒体元数据的附加属性，对媒体进行多维度分类、查询。</span>
+      </div>
+      <div class="metafields">
+        {{~ Object.entries(METAFIELDS): entry }}
+        <label><input type="checkbox" name="metafields" value="{{= entry[0] }}"
+        ${preferences.metafields.includes('{{= entry[0] }}') ? 'checked' : ''}/>{{= entry[1] }}</label>
+        {{~ }}
+      </div>
+      <div>
+        <label><input type="checkbox" name="codify" value="1" ${preferences.codify ? 'checked' : ''}/>使用编号对媒体文件重命名</label>
+        <div class="tiny-title">勾选此项后，修改元数据编号时将会同步修改媒体文件名</div>
+      </div>
+    </div>`,
+    buttons: [{
+      label: '取消'
+    }, {
+      label: '保存',
+      type: 'primary',
+      onclick: async function(dlg, btn) {
+        const data = Quick.form.getJsonObject(dlg);
+        if (!data) return;
+
+        btn.disable();
+        let res = await Quick.http.put('/settings', data);
+        btn.enable();
+        if (!res) return;
+
+        if (data.library === data.origLibrary) {
+          return location.reload();
+        }
+
+        const loading = Quick.dialog({ content: '正在扫描媒体库...' });
+        res = await Quick.http.post('/scan');
+        if (res) {
+          loading.hide();
+          Quick.alert(`<b>扫描完成！</b><br><br>
+            - 共扫描 ${res.totalFiles} 个文件<br>
+            - 发现 ${res.totalMovies} 个媒体文件<br>
+            - 新增 ${res.inserted} 条元数据<br>
+            - 删除 ${res.deleted} 条元数据<br>`, alert => {
+            alert.hide();
+            location.reload();
+          });
+        }
+      }
+    }]
+  });
+}
+
+function generateCovers() {
+  $btnCovers.disable();
+  Quick.http.put('/covers');
+  polling();
+}
+
+function polling() {
+  if (this.timer) return;
+  this.timer = setInterval((func = () => {
+    Quick.http.get('/covers').then(res => {
+      if (!res) {
+        $btnCovers.enable();
+        if (this.timer) {
+          clearInterval(this.timer);
+          this.timer = null;
+        }
+      }
+    });
+    return func;
+  })(), 500);
+}
+
+function scanLibrary(btn) {
+  Quick.confirm('确定扫描媒体库吗？', async cfm => {
+    cfm.hide();
+    btn.disable();
+    const res = await Quick.http.post('/scan');
+    btn.enable();
+    Quick.alert(`<b>扫描完成！</b><br><br>- 删除 ${res.deleted} 条元数据<br>- 新增 ${res.created} 部电影`, dlg => {
+      dlg.hide();
+      if (res.created || res.deleted) location.reload();
+    });
+  });
+}
+
+function turnPage(pageIndex) {
+  const params = new URLSearchParams(location.search);
+  params.set('p', pageIndex);
+  location.href = '?' + params.toString();
+}
+</script>

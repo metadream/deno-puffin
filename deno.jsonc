@@ -1,0 +1,8 @@
+{
+    "compilerOptions": {
+        "emitDecoratorMetadata": true,
+    },
+    "tasks": {
+        "start": "deno run --allow-all --unstable mod.ts"
+    }
+}

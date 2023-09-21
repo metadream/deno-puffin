@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no"/>
+  <link rel="icon" href="/assets/favicon.svg"/>
+  <link rel="stylesheet" href="/assets/app.css"/>
+  <script src="/assets/quick@1.1.0.js"></script>
+  <title>初始化 - {{= appName }}</title>
+</head>
+
+<body class="layout-center">
+  <div class="front-panel" style="width:490px">
+    <div class="quick-field required">
+      <label>管理员账号</label>
+      <input type="text" name="username" maxlength="20" data-message="请输入管理员账号" required/>
+    </div>
+    <div class="quick-field required">
+      <label>管理员密码</label>
+      <input type="password" name="password" maxlength="20" data-message="请输入管理员密码" required/>
+    </div>
+    <div class="quick-field required">
+      <label>媒体库路径</label>
+      <input type="text" name="library" maxlength="100" data-message="请输入媒体库路径" value="/home/xehu/Documents/test" required/>
+    </div>
+
+    <div style="margin-top:20px">
+      可选元数据属性<br>
+      <span class="tiny-title">勾选项将作为媒体元数据的附加属性，对媒体进行多维度分类、查询。</span>
+    </div>
+    <div class="metafields">
+      {{~ Object.entries(METAFIELDS): entry }}
+      <label><input type="checkbox" name="metafields" value="{{= entry[0] }}"/>{{= entry[1] }}</label>
+      {{~ }}
+    </div>
+
+    <div>
+      <label><input type="checkbox" name="codify" value="1"/>使用编号对媒体文件重命名</label>
+      <div class="tiny-title">勾选此项后，修改元数据编号时将会同步修改媒体文件名</div>
+    </div>
+    <button onclick="init(this)">初始化</button>
+  </div>
+</body>
+</html>
+
+<script>
+async function init(btn) {
+  const data = Quick.form.getJsonObject('.front-panel');
+  if (!data) return;
+
+  btn.disable();
+  let res = await Quick.http.post('/init', data);
+  btn.enable();
+  if (res) {
+    const loading = Quick.dialog({ content: '初始化完成！正在扫描媒体库...' });
+    res = await Quick.http.post('/scan');
+    if (res) {
+      loading.hide();
+      Quick.alert(`<b>扫描完成！</b><br><br>
+        - 共扫描 ${res.totalFiles} 个文件<br>
+        - 发现 ${res.totalMovies} 个媒体文件<br>
+        - 新增 ${res.inserted} 条元数据`, alert => {
+        alert.hide();
+        location.href = '/login';
+      });
+    }
+  }
+}
+</script>

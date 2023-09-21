@@ -1,0 +1,71 @@
+<header>
+  <main>
+    <a href="/" class="logo"><img src="/assets/logo.png"/></a>
+    <div class="search-bar">
+      <input class="search-text" type="text" maxlength="30" placeholder="搜索..." onkeyup="search()"/>
+    </div>
+
+    <nav>
+      <menu><a href="/starred"><img src="/assets/circle.svg"/><span>精选</span></a></menu>
+
+      {{? hasMetafield('region') }}
+      <menu>
+        <a><img src="/assets/triangle.svg"/><span>地区</span></a>
+        <div>
+          {{~ Object.entries(region): entry }}
+          <a class="tag-item" href="/?region={{= entry[0] }}">{{= entry[1] }}</a>
+          {{~ }}
+        </div>
+      </menu>
+      {{? }}
+
+      {{? hasMetafield('quality') }}
+      <menu>
+        <a><img src="/assets/triangle.svg"/><span>画质</span></a>
+        <div>
+          {{~ Object.entries(quality): entry }}
+          <a class="tag-item" href="/?quality={{= entry[0] }}">{{= entry[1] }}</a>
+          {{~ }}
+        </div>
+      </menu>
+      {{? }}
+
+      {{? hasMetafield('censorship') }}
+      <menu>
+        <a><img src="/assets/triangle.svg"/><span>审查</span></a>
+        <div>
+          {{~ Object.entries(censorship): entry }}
+          <a class="tag-item" href="/?censorship={{= entry[0] }}">{{= entry[1] }}</a>
+          {{~ }}
+        </div>
+      </menu>
+      {{? }}
+
+      {{? hasMetafield('rating') }}
+      <menu>
+        <a><img src="/assets/triangle.svg"/><span>分级</span></a>
+        <div>
+          {{~ Object.entries(rating): entry }}
+          <a class="tag-item" href="/?rating={{= entry[0] }}">{{= entry[1] }}</a>
+          {{~ }}
+        </div>
+      </menu>
+      {{? }}
+    </nav>
+
+  </main>
+</header>
+
+<script>
+const params = new URLSearchParams(location.search);
+const $search = Quick.query('.search-text');
+$search.value = params.get('q');
+
+function search() {
+  const keyword = $search.value.trim();
+  if (keyword && event.keyCode == 13) {
+    const prefix = location.pathname == '/metadata' ? '' : '/';
+    location.href = prefix + '?q=' + keyword;
+  }
+}
+</script>

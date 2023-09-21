@@ -1,0 +1,41 @@
+{{@ _layout.html }}
+{{< title }}{{= appName }}{{< }}
+
+{{< content }}
+<main>
+  <div class="covers">
+    {{~ movies:movie }}
+    <a class="cover" href="/{{= movie.code }}">
+      <div class="thumb" style="background-image:url('/cover/{{= movie.id }}')">
+        {{? movie.quality }}<div>{{= movie.quality }}</div>{{? }}
+      </div>
+      <div class="caption">
+        <div class="tiny-title">
+          <span>{{= formatDate(new Date(movie.createTime), 'yyyy-MM-dd') }}</span>
+          <span>{{= formatBytes(movie.videoSize) }}</span>
+          {{? movie.starred }}<span class="right"><img src="/assets/circle.svg"/></span>{{? }}
+        </div>
+        <div class="title">{{= movie.title }}</div>
+      </div>
+    </a>
+    {{~ }}
+  </div>
+
+  <div class="paging">
+    {{~ pager.ellipsisPages:pageIndex }}
+    {{? pageIndex == '...' }}<div>...</div>{{?? }}
+    <a class="{{= pageIndex == pager.pageIndex ? 'current' : '' }}" onclick="turnPage({{= pageIndex }})">{{= pageIndex }}</a>
+    {{? }}
+    {{~ }}
+  </div>
+
+</main>
+{{< }}
+
+<script>
+function turnPage(pageIndex) {
+  const params = new URLSearchParams(location.search);
+  params.set('p', pageIndex);
+  location.href = '?' + params.toString();
+}
+</script>

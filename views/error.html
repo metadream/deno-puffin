@@ -1,0 +1,12 @@
+{{@ _layout.html }}
+{{< title }}{{= message }}{{< }}
+{{< bodyClass }}layout-fit{{< }}
+
+{{< content }}
+<main>
+  <div class="error-panel">
+    <h1>{{= status }}</h1>
+    <div>{{= message }}</div>
+  </div>
+</main>
+{{< }}
