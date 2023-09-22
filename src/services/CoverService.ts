@@ -1,5 +1,5 @@
 import config from "../helpers/config.ts";
-import { Autowired, Component, delay, path } from "../helpers/deps.ts";
+import { Autowired, Component, delay, fs, path } from "../helpers/deps.ts";
 import { ffmpeg } from "../helpers/ffmpeg.ts";
 import { MovieService } from "./MovieService.ts";
 
@@ -25,8 +25,10 @@ export class CoverService {
         const movies = this.movieService.list();
         for (const movie of movies) {
             const coverPath = path.join(config.COVER_HOME, movie.id);
-            ffmpeg.capture(movie.videoPath, coverPath);
-            await delay(100);
+            if (!fs.existsSync(coverPath)) {
+                ffmpeg.capture(movie.videoPath, coverPath);
+                await delay(100);
+            }
         }
         this.inProcess = false;
     }
