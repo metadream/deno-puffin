@@ -64,6 +64,15 @@ h2 {
   font-weight: 400;
 }
 
+video {
+  display: block;
+  width: 100%;
+  margin-top: 15px;
+  border-radius: var(--borderRadius);
+  background: #000;
+  cursor: pointer;
+}
+
 table.list {
   width: 100%;
   border-collapse: collapse;
@@ -444,15 +453,6 @@ main.detail .prop > div {
 
 main.detail .tags a {
   margin-right: 10px;
-}
-
-video {
-  display: block;
-  width: 100%;
-  margin-top: 15px;
-  border-radius: var(--borderRadius);
-  background: #000;
-  cursor: pointer;
 }
 
 .tiny-title {
