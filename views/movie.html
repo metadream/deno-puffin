@@ -16,10 +16,8 @@
       {{? movie.starred }}<span class="right"><img src="/assets/circle.svg"/></span>{{? }}
     </div>
 
-    <div class="video-wrapper">
-      <video src="/video/{{=movie.id}}.mp4" poster="/cover/{{= movie.id }}" controlslist="nodownload"
-       controls muted autoplay></video>
-    </div>
+    <video src="/video/{{=movie.id}}.mp4" poster="/cover/{{= movie.id }}" controlslist="nodownload"
+      controls muted autoplay></video>
   </div>
 
   <div class="metadata">
