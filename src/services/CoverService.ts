@@ -21,6 +21,7 @@ export class CoverService {
 
     // 逐一生成封面
     async generate() {
+        if (this.inProcess) return;
         this.inProcess = true;
         const movies = this.movieService.list();
         for (const movie of movies) {
