@@ -1,4 +1,5 @@
 @font-face {
+  font-display: swap;
   font-family: 'Monda';
   src: local('Monda Regular'), local('Monda-Regular'), url(Monda.woff2) format('woff2');
 }
