@@ -6,13 +6,13 @@ import { delay, fs } from "./deps.ts";
  * @Since 2023-09-09
  */
 export const ffmpeg = {
-    // 截取视频第10秒作为封面
+    // 截取视频第5秒作为封面
     // -ss放在最前面可显著加快执行速度
     capture(input: string, output: string): void {
         const ffmpeg = new Deno.Command("ffmpeg", {
             args: [
                 "-ss",
-                "00:00:10",
+                "00:00:05",
                 "-i",
                 input,
                 "-vf",
