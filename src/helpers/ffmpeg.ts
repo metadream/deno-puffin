@@ -10,7 +10,20 @@ export const ffmpeg = {
     // -ss放在最前面可显著加快执行速度
     capture(input: string, output: string): void {
         const ffmpeg = new Deno.Command("ffmpeg", {
-            args: ["-ss", "00:00:10", "-i", input, "-frames:v", "1", "-f", "mjpeg", "-y", output],
+            args: [
+                "-ss",
+                "00:00:10",
+                "-i",
+                input,
+                "-vf",
+                "scale=-1:540",
+                "-frames:v",
+                "1",
+                "-f",
+                "mjpeg",
+                "-y",
+                output,
+            ],
         });
         ffmpeg.outputSync();
     },
