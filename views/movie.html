@@ -16,7 +16,7 @@
     </div>
 
     <video src="/video/{{=movie.id}}.mp4" poster="/cover/{{= movie.id }}" controlslist="nodownload"
-      controls muted autoplay></video>
+      controls muted autoplay autofocus></video>
   </div>
 
   <div class="metadata">
@@ -110,6 +110,14 @@ const $resolution = Quick.query('#resolution');
 const $duration = Quick.query('#duration');
 const video = Quick.query('video');
 video.setAttribute('preload', 'auto');
+
+document.addEventListener('keyup', function(e) {
+  switch(e.keyCode) {
+    case 37: video.currentTime -= 5; e.preventDefault(); break;
+    case 39: video.currentTime += 5; e.preventDefault(); break;
+    default: break;
+  }
+});
 
 video.on('loadedmetadata', function() {
   $resolution.innerHTML = this.videoWidth + '×' + this.videoHeight;
