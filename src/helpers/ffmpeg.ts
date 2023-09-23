@@ -7,7 +7,7 @@ import { delay, fs } from "./deps.ts";
  */
 export const ffmpeg = {
     // 截取视频第5秒作为封面
-    // -ss放在最前面可显著加快执行速度
+    // -ss放在最前面表示截取关键帧，可显著加快执行速度
     capture(input: string, output: string): void {
         const ffmpeg = new Deno.Command("ffmpeg", {
             args: [

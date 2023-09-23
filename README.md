@@ -4,13 +4,20 @@ Puffin是一款轻量级开源视频媒体系统，旨在帮助人们更好地�
 
 ## 运行环境
 
-安装Deno运行时:
+1. 安装Deno运行时
 ```sh
 curl -fsSL https://deno.land/x/install/install.sh | sh
 deno --version
-# deno: 1.36.4
-# v8: 11.6.189.12
-# typescript: 5.1.6
+# deno 1.37.0
+# v8 11.8.172.3
+# typescript 5.2.2
+```
+
+2. 安装Ffmpeg工具
+```sh
+sudo apt install ffmpeg
+ffmpeg -version
+# ffmpeg version 4.4.2
 ```
 
 ## 部署
