@@ -20,7 +20,7 @@ export const ffmpeg = {
         const { duration } = parseFormat(ffprobe.outputSync().stdout);
         if (!duration) return;
 
-        time = Math.min(time, parseInt(duration));
+        time = Math.min(time, parseInt(duration) - 1);
         const ffmpeg = new Deno.Command("ffmpeg", {
             args: [
                 "-ss",
