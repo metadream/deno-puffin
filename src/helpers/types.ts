@@ -17,9 +17,8 @@ export type Movie = {
     title: string;
     videoPath: string;
     videoSize: number;
-    createTime: Date | null;
+    rDate: string;
 
-    releaseDate?: Date | null;
     producer?: string;
     director?: string;
     region?: string;

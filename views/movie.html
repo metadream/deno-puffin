@@ -8,7 +8,7 @@
   <div class="thread">
     <h2>{{= movie.title }}</h2>
     <div class="tiny-title">
-      <span>{{= formatDate(new Date(movie.createTime), 'yyyy-MM-dd') }}</span>
+      <span>{{= movie.rDate }}</span>
       <span>{{= formatBytes(movie.videoSize) }}</span>
       <span>{{= movie.quality || '' }}</span>
       <span id="resolution"></span>
@@ -26,12 +26,10 @@
       <div>{{= movie.code }}</div>
     </div>
 
-    {{? hasMetafield('releaseDate') }}
     <div class="prop">
       <label>发行日期:</label>
-      <div>{{= movie.releaseDate || '' }}</div>
+      <div>{{= movie.rDate }}</div>
     </div>
-    {{? }}
 
     {{? hasMetafield('producer') }}
     <div class="prop">

@@ -17,8 +17,7 @@ export class MovieRepo {
             title       TEXT    NOT NULL            COLLATE NOCASE,
             videoPath   TEXT    NOT NULL    UNIQUE,
             videoSize   REAL    NOT NULL    DEFAULT 0,
-            createTime  DATETIME,
-            releaseDate DATE,
+            rDate       DATE,
             producer    TEXT    COLLATE NOCASE,
             director    TEXT    COLLATE NOCASE,
             region      TEXT    COLLATE NOCASE,
@@ -37,7 +36,7 @@ export class MovieRepo {
         const cond = Object.assign({}, condition);
         let sql = "SELECT * FROM movie WHERE 1 = 1";
         sql += this.buildConditionSql(cond);
-        sql += ` ORDER BY createTime DESC LIMIT ${pageSize} OFFSET ${offset}`;
+        sql += ` ORDER BY rDate DESC LIMIT ${pageSize} OFFSET ${offset}`;
         return db.prepare(sql).all<Movie>(cond);
     }
 
@@ -71,8 +70,8 @@ export class MovieRepo {
     // 批量添加记录（视频路径相同则忽略）
     insert(movies: Movie[]): number {
         const stmt = db.prepare(
-            `INSERT OR IGNORE INTO movie (id, code, title, videoPath, videoSize, createTime)
-            VALUES (:id, :code, :title, :videoPath, :videoSize, :createTime)`,
+            `INSERT OR IGNORE INTO movie (id, code, title, videoPath, videoSize, rDate)
+            VALUES (:id, :code, :title, :videoPath, :videoSize, :rDate)`,
         );
 
         let count = 0;
@@ -101,7 +100,7 @@ export class MovieRepo {
     // 更新记录
     update(movie: Movie): number {
         const stmt = db.prepare(
-            `UPDATE movie SET code = :code, title = :title, videoPath = :videoPath, releaseDate = :releaseDate
+            `UPDATE movie SET code = :code, title = :title, videoPath = :videoPath, rDate = :rDate
             , producer = :producer, director = :director, region = :region, quality = :quality
             , censorship = :censorship, rating = :rating, series = :series, genres = :genres, starring = :starring
             , starred = :starred WHERE id = :id`,

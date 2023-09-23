@@ -96,6 +96,5 @@ export default {
         starring: "主演",
         series: "系列",
         genres: "类型",
-        releaseDate: "发行日期",
     },
 };

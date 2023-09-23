@@ -1,5 +1,5 @@
 import config from "../helpers/config.ts";
-import { Attribute, Autowired, Component, formatBytes, formatDate } from "../helpers/deps.ts";
+import { Attribute, Autowired, Component, formatBytes } from "../helpers/deps.ts";
 import { SettingService } from "../services/SettingService.ts";
 
 /**
@@ -46,11 +46,6 @@ export class Attributes {
     @Attribute
     appVersion() {
         return config.APP_VERSION;
-    }
-
-    @Attribute
-    formatDate() {
-        return formatDate;
     }
 
     @Attribute

@@ -1,5 +1,5 @@
 import config from "../helpers/config.ts";
-import { Autowired, base64Decode, Component, fs, paginate, path } from "../helpers/deps.ts";
+import { Autowired, base64Decode, Component, formatDate, fs, paginate, path } from "../helpers/deps.ts";
 import { nanoid } from "../helpers/utils.ts";
 import { Condition, Movie } from "../helpers/types.ts";
 import { MovieRepo } from "../repos/MovieRepo.ts";
@@ -100,17 +100,20 @@ export class MovieService {
         for (const file of files) {
             if (!file.isFile) continue;
             totalFiles++;
+
             if (config.VIDEO_FILE_FORMATS.includes(path.extname(file.name))) {
                 const info = Deno.statSync(file.path);
+                const mtime = info.mtime || new Date();
                 const name = file.name.replace(/\.[^.]+$/, "");
                 const id = nanoid();
+
                 movies.push({
                     id,
                     code: id,
                     title: name,
                     videoPath: file.path,
                     videoSize: info.size,
-                    createTime: info.mtime,
+                    rDate: formatDate(mtime, "yyyy-MM-dd"),
                 });
             }
         }

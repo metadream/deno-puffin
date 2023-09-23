@@ -67,6 +67,7 @@ h2 {
 video {
   display: block;
   width: 100%;
+  aspect-ratio: 16/9;
   margin-top: 15px;
   border-radius: var(--borderRadius);
   background: #000;
