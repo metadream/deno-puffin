@@ -277,9 +277,9 @@ function scanLibrary() {
   });
 }
 
-function startScan() {
+async function startScan() {
   $scanBtn.disabled = true;
-  Quick.http.post('/scan');
+  await Quick.http.post('/scan');
   polling();
 }
 
