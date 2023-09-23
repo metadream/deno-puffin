@@ -53,19 +53,6 @@ async function init(btn) {
   btn.disable();
   let res = await Quick.http.post('/init', data);
   btn.enable();
-  if (res) {
-    const loading = Quick.dialog({ content: '初始化完成！正在扫描媒体库...' });
-    res = await Quick.http.post('/scan');
-    if (res) {
-      loading.hide();
-      Quick.alert(`<b>扫描完成！</b><br><br>
-        - 共扫描 ${res.totalFiles} 个文件<br>
-        - 发现 ${res.totalMovies} 个媒体文件<br>
-        - 新增 ${res.inserted} 条元数据`, alert => {
-        alert.hide();
-        location.href = '/login';
-      });
-    }
-  }
+  if (res) location.href = '/metadata';
 }
 </script>
