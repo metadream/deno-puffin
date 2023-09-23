@@ -1,18 +1,30 @@
 import { delay, fs } from "./deps.ts";
 
+const textDecoder = new TextDecoder();
+function parseFormat(stdout: Uint8Array) {
+    const json = JSON.parse(textDecoder.decode(stdout));
+    return json.format || json;
+}
+
 /**
  * FFMPEG服务
  * @Author metadream
  * @Since 2023-09-09
  */
 export const ffmpeg = {
-    // 截取视频第5秒作为封面
     // -ss放在最前面表示截取关键帧，可显著加快执行速度
-    capture(input: string, output: string): void {
+    capture(input: string, output: string, time: number): void {
+        const ffprobe = new Deno.Command("ffprobe", {
+            args: ["-i", input, "-v", "quiet", "-print_format", "json", "-show_format"],
+        });
+        const { duration } = parseFormat(ffprobe.outputSync().stdout);
+        if (!duration) return;
+
+        time = Math.min(time, parseInt(duration));
         const ffmpeg = new Deno.Command("ffmpeg", {
             args: [
                 "-ss",
-                "00:00:05",
+                String(time),
                 "-i",
                 input,
                 "-vf",
