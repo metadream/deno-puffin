@@ -1,6 +1,5 @@
 import config from "../helpers/config.ts";
 import { Autowired, Context, Controller, Get, Post, View } from "../helpers/deps.ts";
-import { cache, nanoid } from "../helpers/utils.ts";
 import { User } from "../helpers/types.ts";
 import { SettingService } from "../services/SettingService.ts";
 
@@ -17,19 +16,16 @@ export class UserController {
     // 页面：登录
     @Get("/login")
     @View("login.html")
-    view(ctx: Context) {
+    view(ctx: Context): void {
         if (ctx.authorized) ctx.redirect("/metadata");
     }
 
     // 接口：登录
     @Post("/login")
-    async login(ctx: Context) {
+    async login(ctx: Context): Promise<string> {
         const user = await ctx.json() as User;
-        await this.settingService.login(user);
-
-        const sessId = nanoid();
-        cache.set(sessId, true, config.SESSION_TIMEOUT);
+        const sessId = await this.settingService.login(user);
         ctx.cookies.set(config.SESSION_KEY, sessId);
-        return true;
+        return sessId;
     }
 }

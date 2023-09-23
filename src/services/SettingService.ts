@@ -1,5 +1,7 @@
+import config from "../helpers/config.ts";
 import { Autowired, Component, fs, sha1 } from "../helpers/deps.ts";
 import { Preferences, User } from "../helpers/types.ts";
+import { cache, nanoid } from "../helpers/utils.ts";
 import { SettingRepo } from "../repos/SettingRepo.ts";
 
 /**
@@ -18,7 +20,7 @@ export class SettingService {
     }
 
     // 管理员登录
-    async login(user: User): Promise<void> {
+    async login(user: User): Promise<string> {
         const admin = await this.getUser();
         const username = await sha1(user.username);
         const password = await sha1(user.password);
@@ -26,6 +28,9 @@ export class SettingService {
         if (username !== admin.username || password !== admin.password) {
             throw { status: 401, message: "用户名或密码错误" };
         }
+        const sessId = nanoid();
+        cache.set(sessId, true, config.SESSION_TIMEOUT);
+        return sessId;
     }
 
     // 保存管理员用户信息

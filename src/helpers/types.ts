@@ -1,5 +1,10 @@
 export type Condition = Record<string, string | number | boolean | undefined>;
 
+export type Setting = {
+    user: User;
+    preferences: Preferences;
+};
+
 export type User = {
     username: string;
     password: string;
