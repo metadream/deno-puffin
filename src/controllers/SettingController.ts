@@ -32,13 +32,14 @@ export class SettingController {
     // 接口：更新设置
     @Put("/settings")
     async saveSettings(ctx: Context): Promise<Setting> {
-        const setting = await this.populate(ctx);
+        const setting = await this.collate(ctx);
         await this.settingService.saveUser(setting.user);
         await this.settingService.savePreferences(setting.preferences);
         return setting;
     }
 
-    private async populate(ctx: Context): Promise<Setting> {
+    // 整理请求体数据
+    private async collate(ctx: Context): Promise<Setting> {
         // deno-lint-ignore no-explicit-any
         const data: any = await ctx.json();
         return {

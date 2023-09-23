@@ -32,7 +32,7 @@ export class MovieController {
         return this.movieService.search(ctx.query);
     }
 
-    // 页面：获取电影详情
+    // 页面：获取单部电影详情
     @Get("/:code")
     @View("movie.html")
     detail(ctx: Context) {
@@ -48,6 +48,7 @@ export class MovieController {
     async metadata(ctx: Context) {
         const pagination = this.movieService.search(ctx.query);
         return Object.assign(pagination, {
+            completed: this.movieService.status().completed,
             preferences: await this.settingService.getPreferences(),
             METAFIELDS: config.METAFIELDS,
         });

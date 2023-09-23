@@ -6,7 +6,7 @@
   <div class="headline">
     <h2>元数据</h2>
     <div class="buttons">
-      <button onclick="scanLibrary()" id="scanBtn">扫描媒体库</button>
+      <button onclick="scanLibrary()" id="scanBtn" {{= completed?'':'disabled' }}>扫描媒体库</button>
       <button onclick="openSettings(this)">偏好设置</button>
     </div>
   </div>
@@ -54,6 +54,7 @@
 <script>
 const preferences = {{= JSON.stringify(preferences) }};
 const $scanBtn = Quick.query('#scanBtn');
+if ($scanBtn.disabled) polling();
 
 function openEditor(movie) {
   const producerField = {{= hasMetafield('producer')}} ? `
@@ -273,6 +274,7 @@ function scanLibrary(btn) {
 
 function polling() {
   if (this.timer) return;
+
   this.timer = setInterval((func = () => {
     Quick.http.get('/status').then(res => {
       if (!res) return;
@@ -280,6 +282,7 @@ function polling() {
       $scanBtn.innerHTML = `正在扫描... ${res.processed}/${res.totalMovies}`;
       if (res.completed === true) {
         $scanBtn.disabled = false;
+        $scanBtn.innerHTML = '扫描媒体库';
         clearInterval(this.timer);
         this.timer = null;
 

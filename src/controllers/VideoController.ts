@@ -31,7 +31,7 @@ export class VideoController {
         }
     }
 
-    // 接口：获取HLS转码播放列表
+    // 接口：获取HLS播放列表
     @Get("/:id\\.m3u8")
     async playlist(ctx: Context) {
         const id = ctx.params.id as string;

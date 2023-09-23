@@ -18,6 +18,7 @@ export class MovieService {
     @Autowired
     movieRepo!: MovieRepo;
 
+    // 扫描状态
     private scanStatus: ScanStatus = {
         totalFiles: 0,
         totalMovies: 0,
@@ -46,11 +47,6 @@ export class MovieService {
     // 根据编号获取电影
     getMovie(code: string): Movie | undefined {
         return this.movieRepo.query(decodeURI(code));
-    }
-
-    // 获取所有电影
-    list(): Movie[] {
-        return this.movieRepo.queryAll();
     }
 
     // 修改电影元数据
@@ -95,15 +91,15 @@ export class MovieService {
         this.scanStatus.completed = false;
 
         await this.purgeMetadata();
-        const movies = await this.scanLibrary();
-        this.genCovers(movies).then(() => {
+        await this.scanLibrary();
+        this.genCovers().then(() => {
             this.scanStatus.completed = true;
         });
     }
 
     // 清除视频路径对应文件不存在的元数据
     private async purgeMetadata(): Promise<void> {
-        const movies = this.list();
+        const movies = this.movieRepo.queryAll();
         const library = await this.settingService.getLibrary();
 
         const ids = [];
@@ -118,8 +114,9 @@ export class MovieService {
     }
 
     // 截取视频帧生成封面
-    private async genCovers(movies: Movie[]): Promise<void> {
+    private async genCovers(): Promise<void> {
         this.scanStatus.processed = 0;
+        const movies = this.movieRepo.queryAll();
 
         for (const movie of movies) {
             const coverPath = path.join(config.COVER_HOME, movie.id);
@@ -127,12 +124,12 @@ export class MovieService {
 
             this.scanStatus.processed++;
             ffmpeg.capture(movie.videoPath, coverPath);
-            await delay(1000);
+            await delay(100);
         }
     }
 
     // 扫描媒体库获取文件元数据
-    private async scanLibrary(): Promise<Movie[]> {
+    private async scanLibrary(): Promise<void> {
         const library = await this.settingService.getLibrary();
         const files = fs.walkSync(library);
         const movies: Movie[] = [];
@@ -160,7 +157,6 @@ export class MovieService {
 
         this.scanStatus.totalMovies = movies.length;
         this.scanStatus.inserted = this.movieRepo.insert(movies);
-        return movies;
     }
 
     // 判断文件名是否属于视频媒体
