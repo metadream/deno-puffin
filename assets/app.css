@@ -66,6 +66,7 @@ h2 {
 
 video {
   display: block;
+  outline: 0;
   width: 100%;
   aspect-ratio: 16/9;
   margin-top: 15px;
