@@ -64,6 +64,7 @@ export class VideoService {
         if (proc) {
             try {
                 proc.kill("SIGKILL");
+                cache.delete(playId);
             } catch (e) {
                 console.log("kill ffmpeg process failed:", e.message);
             }

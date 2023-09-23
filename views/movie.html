@@ -140,7 +140,13 @@ function transcode() {
     hls.loadSource(source);
     hls.attachMedia(video);
     hls.on(Hls.Events.MANIFEST_PARSED, () => video.play());
- } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+    hls.on(Hls.Events.LEVEL_PTS_UPDATED, () => {
+      $duration.innerHTML = formatDuration(video.duration);
+    });
+    hls.on(Hls.Events.ERROR, (event, data) => {
+      if (data.fatal) Quick.error('视频转码发生错误');
+    });
+  } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
     video.src = source;
     video.on('canplay', () => video.play());
   }

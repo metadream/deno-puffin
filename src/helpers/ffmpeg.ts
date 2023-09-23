@@ -1,3 +1,4 @@
+import config from "./config.ts";
 import { delay, fs } from "./deps.ts";
 
 const textDecoder = new TextDecoder();
@@ -65,7 +66,10 @@ export const ffmpeg = {
         // 检测m3u8文件是否被创建 (10秒超时)
         let timeout = 0;
         while (!fs.existsSync(output)) {
-            if (timeout > 10000) throw { status: 500, message: "视频转码失败" };
+            if (timeout > config.VIDEO_TRANSCODE_TIMEOUT) {
+                proc.kill("SIGKILL");
+                throw { status: 500, message: "视频转码失败" };
+            }
             timeout += 100;
             await delay(100);
         }

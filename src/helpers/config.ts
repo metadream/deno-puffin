@@ -14,6 +14,7 @@ export default {
     SESSION_TIMEOUT: 30 * 60 * 1000, // 30 minutes
     SESSION_KEY: "SESSID",
 
+    VIDEO_TRANSCODE_TIMEOUT: 30000, // 30 seconds
     VIDEO_CHUNK_SIZE: 2 * 10 ** 7, // 20 MB
     VIDEO_FILE_FORMATS: [
         ".3g2",
