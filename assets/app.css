@@ -325,8 +325,8 @@ footer p:first-child {
   display: flex;
   flex-direction: column;
   background: var(--placeholderColor);
-  border-top-left-radius: 3px;
-  border-top-right-radius: 3px;
+  border-top-left-radius: var(--borderRadius);
+  border-top-right-radius: var(--borderRadius);
   cursor: pointer;
   transition: all .3s;
   margin: 10px;
@@ -351,8 +351,8 @@ footer p:first-child {
   background-position: center;
   background-size: cover;
   background-color: var(--placeholderColor);
-  border-top-left-radius: 3px;
-  border-top-right-radius: 3px;
+  border-top-left-radius: var(--borderRadius);
+  border-top-right-radius: var(--borderRadius);
   padding-top: 66.67%;
 }
 
@@ -370,8 +370,8 @@ footer p:first-child {
   flex: 1;
   color: inherit;
   background: #fff;
-  border-bottom-left-radius: 3px;
-  border-bottom-right-radius: 3px;
+  border-bottom-left-radius: var(--borderRadius);
+  border-bottom-right-radius: var(--borderRadius);
   padding: 10px;
 }
 
