@@ -1,5 +1,5 @@
 import config from "../helpers/config.ts";
-import { Autowired, Context, Controller, Get, Post, Put, View } from "../helpers/deps.ts";
+import { Autowired, Context, Controller, fs, Get, Post, Put, View } from "../helpers/deps.ts";
 import { nanoid } from "../helpers/utils.ts";
 import { Movie } from "../helpers/types.ts";
 import { SettingService } from "../services/SettingService.ts";
@@ -53,6 +53,15 @@ export class MovieController {
         });
     }
 
+    // 接口：输出封面图片流
+    @Get("/cover/:id")
+    async cover(ctx: Context): Promise<ArrayBuffer | undefined> {
+        ctx.path = config.COVER_HOME + "/" + ctx.params.id;
+        if (fs.existsSync(ctx.path)) {
+            return await ctx.serve(ctx);
+        }
+    }
+
     // 接口：修改元数据
     @Put("/metadata")
     async update(ctx: Context) {
@@ -63,8 +72,12 @@ export class MovieController {
     // 接口：扫描媒体库
     @Post("/scan")
     async scan() {
-        const deleted = await this.movieService.purge();
-        const result = await this.movieService.scan();
-        return Object.assign(result, { deleted });
+        await this.movieService.scan();
+    }
+
+    // 接口：获取扫描状态
+    @Get("/status")
+    status() {
+        return this.movieService.status();
     }
 }

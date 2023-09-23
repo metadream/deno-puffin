@@ -1,9 +1,10 @@
 import config from "../helpers/config.ts";
-import { Autowired, base64Decode, Component, formatDate, fs, paginate, path } from "../helpers/deps.ts";
+import { Autowired, base64Decode, Component, delay, formatDate, fs, paginate, path } from "../helpers/deps.ts";
 import { nanoid } from "../helpers/utils.ts";
-import { Condition, Movie } from "../helpers/types.ts";
+import { Condition, Movie, ScanStatus } from "../helpers/types.ts";
 import { MovieRepo } from "../repos/MovieRepo.ts";
 import { SettingService } from "./SettingService.ts";
+import { ffmpeg } from "../helpers/ffmpeg.ts";
 
 /**
  * 电影元数据服务
@@ -16,6 +17,15 @@ export class MovieService {
     settingService!: SettingService;
     @Autowired
     movieRepo!: MovieRepo;
+
+    private scanStatus: ScanStatus = {
+        totalFiles: 0,
+        totalMovies: 0,
+        deleted: 0,
+        inserted: 0,
+        processed: 0,
+        completed: true,
+    };
 
     // 根据条件分页列出所有电影
     search(condition: Condition) {
@@ -74,8 +84,25 @@ export class MovieService {
         return result;
     }
 
-    // 清除视频路径对应的文件不存在的元数据
-    async purge(): Promise<number> {
+    // 获取扫描状态
+    status(): ScanStatus {
+        return this.scanStatus;
+    }
+
+    // 清理元数据、扫描媒体库、生成封面
+    async scan(): Promise<void> {
+        if (!this.scanStatus.completed) return;
+        this.scanStatus.completed = false;
+
+        await this.purgeMetadata();
+        const movies = await this.scanLibrary();
+        this.genCovers(movies).then(() => {
+            this.scanStatus.completed = true;
+        });
+    }
+
+    // 清除视频路径对应文件不存在的元数据
+    private async purgeMetadata(): Promise<void> {
         const movies = this.list();
         const library = await this.settingService.getLibrary();
 
@@ -87,38 +114,57 @@ export class MovieService {
                 ids.push(movie.id);
             }
         }
-        return this.movieRepo.delete(ids);
+        this.scanStatus.deleted = this.movieRepo.delete(ids);
     }
 
-    // 扫描配置媒体库中的电影文件生成元数据
-    async scan(): Promise<Record<string, number>> {
+    // 截取视频帧生成封面
+    private async genCovers(movies: Movie[]): Promise<void> {
+        this.scanStatus.processed = 0;
+
+        for (const movie of movies) {
+            const coverPath = path.join(config.COVER_HOME, movie.id);
+            if (fs.existsSync(coverPath)) continue;
+
+            this.scanStatus.processed++;
+            ffmpeg.capture(movie.videoPath, coverPath);
+            await delay(1000);
+        }
+    }
+
+    // 扫描媒体库获取文件元数据
+    private async scanLibrary(): Promise<Movie[]> {
         const library = await this.settingService.getLibrary();
         const files = fs.walkSync(library);
         const movies: Movie[] = [];
-        let totalFiles = 0;
+        this.scanStatus.totalFiles = 0;
 
         for (const file of files) {
             if (!file.isFile) continue;
-            totalFiles++;
+            this.scanStatus.totalFiles++;
+            if (!this.isMedia(file.name)) continue;
 
-            if (config.VIDEO_FILE_FORMATS.includes(path.extname(file.name))) {
-                const info = Deno.statSync(file.path);
-                const mtime = info.mtime || new Date();
-                const name = file.name.replace(/\.[^.]+$/, "");
-                const id = nanoid();
+            const info = Deno.statSync(file.path);
+            const mtime = info.mtime || new Date();
+            const name = file.name.replace(/\.[^.]+$/, "");
+            const id = nanoid();
 
-                movies.push({
-                    id,
-                    code: id,
-                    title: name,
-                    videoPath: file.path,
-                    videoSize: info.size,
-                    rDate: formatDate(mtime, "yyyy-MM-dd"),
-                });
-            }
+            movies.push({
+                id,
+                code: id,
+                title: name,
+                videoPath: file.path,
+                videoSize: info.size,
+                rDate: formatDate(mtime, "yyyy-MM-dd"),
+            });
         }
 
-        const inserted = this.movieRepo.insert(movies);
-        return { totalFiles, totalMovies: movies.length, inserted };
+        this.scanStatus.totalMovies = movies.length;
+        this.scanStatus.inserted = this.movieRepo.insert(movies);
+        return movies;
+    }
+
+    // 判断文件名是否属于视频媒体
+    private isMedia(fileName: string): boolean {
+        return config.VIDEO_FILE_FORMATS.includes(path.extname(fileName));
     }
 }

@@ -6,9 +6,8 @@
   <div class="headline">
     <h2>元数据</h2>
     <div class="buttons">
+      <button onclick="scanLibrary()" id="scanBtn">扫描媒体库</button>
       <button onclick="openSettings(this)">偏好设置</button>
-      <button onclick="generateCovers()" id="btnCovers">生成封面</button>
-      <button onclick="scanLibrary(this)">扫描媒体库</button>
     </div>
   </div>
 
@@ -54,9 +53,7 @@
 
 <script>
 const preferences = {{= JSON.stringify(preferences) }};
-const $btnCovers = Quick.query('#btnCovers');
-$btnCovers.disable();
-polling();
+const $scanBtn = Quick.query('#scanBtn');
 
 function openEditor(movie) {
   const producerField = {{= hasMetafield('producer')}} ? `
@@ -256,60 +253,48 @@ function openSettings(btn) {
         if (!res) return;
 
         if (data.library === data.origLibrary) {
-          return location.reload();
-        }
-
-        const loading = Quick.dialog({ content: '正在扫描媒体库...' });
-        res = await Quick.http.post('/scan');
-        if (res) {
-          loading.hide();
-          Quick.alert(`<b>扫描完成！</b><br><br>
-            - 共扫描 ${res.totalFiles} 个文件<br>
-            - 发现 ${res.totalMovies} 个媒体文件<br>
-            - 新增 ${res.inserted} 条元数据<br>
-            - 删除 ${res.deleted} 条元数据<br>`, alert => {
-            alert.hide();
-            location.reload();
-          });
+          location.reload();
+        } else {
+          // start scanLibrary
         }
       }
     }]
   });
 }
 
-function generateCovers() {
-  $btnCovers.disable();
-  Quick.http.put('/covers');
-  polling();
+function scanLibrary(btn) {
+  Quick.confirm('扫描媒体库过程可能较长，期间请不要执行更新操作，<br>但可以访问或关闭页面等待后台处理。确定继续吗？', cfm => {
+    cfm.hide();
+    $scanBtn.disabled = true;
+    Quick.http.post('/scan');
+    polling();
+  });
 }
 
 function polling() {
   if (this.timer) return;
   this.timer = setInterval((func = () => {
-    Quick.http.get('/covers').then(res => {
-      if (!res) {
-        $btnCovers.enable();
-        if (this.timer) {
-          clearInterval(this.timer);
-          this.timer = null;
-        }
+    Quick.http.get('/status').then(res => {
+      if (!res) return;
+
+      $scanBtn.innerHTML = `正在扫描... ${res.processed}/${res.totalMovies}`;
+      if (res.completed === true) {
+        $scanBtn.disabled = false;
+        clearInterval(this.timer);
+        this.timer = null;
+
+        Quick.alert(`<b>扫描完成！</b><br><br>
+          - 共扫描 ${res.totalFiles} 个文件<br>
+          - 发现 ${res.totalMovies} 个媒体文件<br>
+          - 新增 ${res.inserted} 条元数据<br>
+          - 删除 ${res.deleted} 条元数据<br>`, alert => {
+          alert.hide();
+          location.reload();
+        });
       }
     });
     return func;
   })(), 500);
-}
-
-function scanLibrary(btn) {
-  Quick.confirm('确定扫描媒体库吗？', async cfm => {
-    cfm.hide();
-    btn.disable();
-    const res = await Quick.http.post('/scan');
-    btn.enable();
-    Quick.alert(`<b>扫描完成！</b><br><br>- 删除 ${res.deleted} 条元数据<br>- 新增 ${res.inserted} 部电影`, dlg => {
-      dlg.hide();
-      if (res.created || res.deleted) location.reload();
-    });
-  });
 }
 
 function turnPage(pageIndex) {
