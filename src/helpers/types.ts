@@ -1,5 +1,14 @@
 export type Condition = Record<string, string | number | boolean | undefined>;
 
+export type ScanStatus = {
+    totalFiles: number;
+    totalMovies: number;
+    deleted: number;
+    inserted: number;
+    processed: number;
+    completed: boolean;
+};
+
 export type Setting = {
     user: User;
     preferences: Preferences;
