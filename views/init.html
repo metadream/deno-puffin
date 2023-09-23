@@ -53,6 +53,6 @@ async function init(btn) {
   btn.disable();
   let res = await Quick.http.post('/init', data);
   btn.enable();
-  if (res) location.href = '/metadata';
+  if (res) location.href = '/metadata?init';
 }
 </script>

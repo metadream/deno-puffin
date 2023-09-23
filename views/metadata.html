@@ -55,6 +55,11 @@
 const preferences = {{= JSON.stringify(preferences) }};
 const $scanBtn = Quick.query('#scanBtn');
 if ($scanBtn.disabled) polling();
+if (location.search === '?init') {
+  history.replaceState({}, "", "/metadata");
+  Quick.info('正在进行初始化扫描...');
+  startScan();
+}
 
 function openEditor(movie) {
   const producerField = {{= hasMetafield('producer')}} ? `
@@ -253,23 +258,29 @@ function openSettings(btn) {
         btn.enable();
         if (!res) return;
 
+        dlg.hide();
         if (data.library === data.origLibrary) {
           location.reload();
         } else {
-          // start scanLibrary
+          Quick.info('媒体库路径变更，正在重新扫描...');
+          startScan();
         }
       }
     }]
   });
 }
 
-function scanLibrary(btn) {
+function scanLibrary() {
   Quick.confirm('扫描媒体库过程可能较长，期间请不要执行更新操作，<br>但可以访问或关闭页面等待后台处理。确定继续吗？', cfm => {
     cfm.hide();
-    $scanBtn.disabled = true;
-    Quick.http.post('/scan');
-    polling();
+    startScan();
   });
+}
+
+function startScan() {
+  $scanBtn.disabled = true;
+  Quick.http.post('/scan');
+  polling();
 }
 
 function polling() {
