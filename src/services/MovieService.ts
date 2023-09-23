@@ -123,7 +123,7 @@ export class MovieService {
             if (fs.existsSync(coverPath)) continue;
 
             this.scanStatus.processed++;
-            ffmpeg.capture(movie.videoPath, coverPath, config.VIDEO_CAPTURE_TIME);
+            ffmpeg.capture(movie.videoPath, coverPath);
             await delay(100);
         }
     }

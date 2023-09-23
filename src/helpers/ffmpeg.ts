@@ -13,18 +13,18 @@ function parseFormat(stdout: Uint8Array) {
  */
 export const ffmpeg = {
     // -ss放在最前面表示截取关键帧，可显著加快执行速度
-    capture(input: string, output: string, time: number): void {
+    capture(input: string, output: string): void {
         const ffprobe = new Deno.Command("ffprobe", {
             args: ["-i", input, "-v", "quiet", "-print_format", "json", "-show_format"],
         });
         const { duration } = parseFormat(ffprobe.outputSync().stdout);
         if (!duration) return;
 
-        time = Math.min(time, parseInt(duration) - 1);
+        const time = String(Math.floor(parseInt(duration) / 2));
         const ffmpeg = new Deno.Command("ffmpeg", {
             args: [
                 "-ss",
-                String(time),
+                time,
                 "-i",
                 input,
                 "-vf",
