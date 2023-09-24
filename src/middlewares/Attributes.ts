@@ -1,5 +1,5 @@
 import config from "../helpers/config.ts";
-import { Attribute, Autowired, Component, formatBytes } from "../helpers/deps.ts";
+import { Attribute, Autowired, Component, formatBytes, formatDuration } from "../helpers/deps.ts";
 import { SettingService } from "../services/SettingService.ts";
 
 /**
@@ -51,5 +51,10 @@ export class Attributes {
     @Attribute
     formatBytes() {
         return formatBytes;
+    }
+
+    @Attribute
+    formatDuration() {
+        return formatDuration;
     }
 }

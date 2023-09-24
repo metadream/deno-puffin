@@ -53,6 +53,10 @@ export type Movie = {
     videoSize: number;
     rDate: string;
 
+    videoWidth?: number;
+    videoHeight?: number;
+    duration?: number;
+
     producer?: string;
     director?: string;
     region?: string;

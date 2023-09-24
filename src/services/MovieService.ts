@@ -55,6 +55,11 @@ export class MovieService {
         if (!movie.code) throw "编号不能为空";
         if (!movie.title) throw "标题不能为空";
 
+        const _movie = this.movieRepo.query(movie.code);
+        if (_movie && _movie.id !== movie.id) {
+            throw { status: 500, message: "已存在相同编号的记录" };
+        }
+
         // 格式化主演和类型
         if (movie.starring) movie.starring = movie.starring.replace(/\s*[,，]\s*/g, ", ");
         if (movie.genres) movie.genres = movie.genres.replace(/\s*[,，]\s*/g, ", ");
@@ -122,8 +127,18 @@ export class MovieService {
             const coverPath = path.join(config.COVER_HOME, movie.id);
             if (fs.existsSync(coverPath)) continue;
 
+            // 更新媒体信息
+            const mediaInfo = ffmpeg.getMediaInfo(movie.videoPath);
+            if (mediaInfo.duration && mediaInfo.video) {
+                movie.videoWidth = mediaInfo.video.width;
+                movie.videoHeight = mediaInfo.video.height;
+                movie.duration = Math.trunc(mediaInfo.duration * 1000);
+                this.movieRepo.update(movie);
+            }
+
+            // 截取封面
+            ffmpeg.capture(movie.videoPath, coverPath, mediaInfo.duration);
             this.scanStatus.processed++;
-            ffmpeg.capture(movie.videoPath, coverPath);
             await delay(100);
         }
     }

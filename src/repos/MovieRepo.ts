@@ -17,6 +17,9 @@ export class MovieRepo {
             title       TEXT    NOT NULL            COLLATE NOCASE,
             videoPath   TEXT    NOT NULL    UNIQUE,
             videoSize   REAL    NOT NULL    DEFAULT 0,
+            videoWidth  REAL    NOT NULL    DEFAULT 0,
+            videoHeight REAL    NOT NULL    DEFAULT 0,
+            duration    REAL    NOT NULL    DEFAULT 0,
             rDate       DATE,
             producer    TEXT    COLLATE NOCASE,
             director    TEXT    COLLATE NOCASE,
@@ -97,13 +100,14 @@ export class MovieRepo {
         return count;
     }
 
-    // 更新记录
+    // 更新元数据
     update(movie: Movie): number {
         const stmt = db.prepare(
             `UPDATE movie SET code = :code, title = :title, videoPath = :videoPath, rDate = :rDate
+            , videoSize = :videoSize, videoWidth = :videoWidth, videoHeight = :videoHeight, duration = :duration
             , producer = :producer, director = :director, region = :region, quality = :quality
-            , censorship = :censorship, rating = :rating, series = :series, genres = :genres, starring = :starring
-            , starred = :starred WHERE id = :id`,
+            , censorship = :censorship, rating = :rating, series = :series, genres = :genres
+            , starring = :starring, starred = :starred WHERE id = :id`,
         );
         return stmt.run(movie);
     }

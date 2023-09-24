@@ -145,6 +145,10 @@ function openEditor(movie) {
             <label>编号</label>
             <input type="text" name="code" maxlength="20" value="${movie.code}" data-message="请输入编号" required/>
             <input type="hidden" name="id" value="${movie.id}"/>
+            <input type="hidden" name="videoSize" value="${movie.videoSize}"/>
+            <input type="hidden" name="videoWidth" value="${movie.videoWidth}"/>
+            <input type="hidden" name="videoHeight" value="${movie.videoHeight}"/>
+            <input type="hidden" name="duration" value="${movie.duration}"/>
           </div>
           <div class="quick-field">
             <label>发行日期</label>

@@ -15,7 +15,7 @@ function parseFormat(stdout: Uint8Array) {
  * @Since 2023-09-09
  */
 export const ffmpeg = {
-    mediainfo(input: string): MediaInfo {
+    getMediaInfo(input: string): MediaInfo {
         const ffprobe = new Deno.Command("ffprobe", {
             args: ["-i", input, "-v", "quiet", "-print_format", "json", "-show_format", "-show_streams"],
         });
@@ -54,14 +54,8 @@ export const ffmpeg = {
     },
 
     // -ss放在最前面表示截取关键帧，可显著加快执行速度
-    capture(input: string, output: string): void {
-        const ffprobe = new Deno.Command("ffprobe", {
-            args: ["-i", input, "-v", "quiet", "-print_format", "json", "-show_format"],
-        });
-        const { duration } = parseFormat(ffprobe.outputSync().stdout);
-        if (!duration) return;
-
-        const time = String(Math.floor(parseInt(duration) / 2));
+    capture(input: string, output: string, duration?: number): void {
+        const time = duration ? String(Math.floor(duration / 2)) : "30";
         const ffmpeg = new Deno.Command("ffmpeg", {
             args: [
                 "-ss",
