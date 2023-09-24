@@ -18,14 +18,14 @@ export class VideoController {
         ctx.set("Content-Type", "video/mp4");
         const range = ctx.get("range");
         const id = ctx.params.id as string;
-        const video = this.videoService.streaming(id, range);
+        const v = this.videoService.streaming(id, range);
 
-        if (video) {
+        if (v) {
             ctx.set("Accept-Ranges", "bytes");
-            ctx.set("Content-Range", `bytes ${video.start}-${video.end}/${video.total}`);
-            ctx.set("Content-Length", String(video.length));
+            ctx.set("Content-Range", `bytes ${v.start}-${v.end}/${v.total}`);
+            ctx.set("Content-Length", `${v.length}`);
             ctx.status = 206;
-            return video.stream;
+            return v.stream;
         }
     }
 
