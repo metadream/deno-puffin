@@ -32,24 +32,42 @@ export class VideoService {
     streaming(id: string, range: string | null): Record<string, number | ReadableStream> | undefined {
         if (!range) return;
         const movie = this.movieService.get(id);
-        if (!movie) {
-            throw { status: 404, message: "未找到相关电影" };
-        }
+        if (!movie) throw { status: 404, message: "未找到相关电影" };
 
+        // 获取文件大小
         const source = movie.videoPath;
-        const entry = Deno.statSync(source);
-        const total = entry.size;
+        const total = Deno.statSync(source).size;
 
+        // 解析Range请求头
         const bytes = range.replace("bytes=", "").split("-", 2);
         const start = bytes[0] ? Number(bytes[0]) : 0;
         let end = bytes[1] ? Number(bytes[1]) : 0;
-        // Safari 首次发送 range 值为 bytes=0-1
-        end = end == 1 ? 1 : Math.min(start + config.VIDEO_CHUNK_SIZE, total - 1);
+        end = end == 1 ? 1 : Math.min(start + config.VIDEO_CHUNK_SIZE, total - 1); // Safari首次发送range值为bytes=0-1
         const length = end - start + 1;
 
-        const file = Deno.openSync(source, { read: true });
-        Deno.seekSync(file.rid, start, Deno.SeekMode.Start);
-        return { start, end, total, length, stream: file.readable };
+        // 在请求开始位置打开文件
+        const video = Deno.openSync(source, { read: true });
+        Deno.seekSync(video.rid, start, Deno.SeekMode.Start);
+
+        // 输出视频流
+        const stream = new ReadableStream({
+            async pull(controller) {
+                const chunk = new Uint8Array(2048);
+                try {
+                    const read = await video.read(chunk);
+                    if (read) {
+                        controller.enqueue(chunk);
+                    }
+                } catch (_) {
+                    controller.close();
+                    video.close();
+                }
+            },
+            cancel() {
+                video.close();
+            },
+        });
+        return { start, end, total, length, stream };
     }
 
     // 页面刷新或关闭后的清理

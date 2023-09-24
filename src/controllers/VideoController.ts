@@ -17,17 +17,15 @@ export class VideoController {
     streaming(ctx: Context) {
         ctx.set("Content-Type", "video/mp4");
         const range = ctx.get("range");
+        const id = ctx.params.id as string;
+        const video = this.videoService.streaming(id, range);
 
-        if (range) {
-            const id = ctx.params.id as string;
-            const data = this.videoService.streaming(id, range);
-            if (data) {
-                ctx.set("Accept-Ranges", "bytes");
-                ctx.set("Content-Range", `bytes ${data.start}-${data.end}/${data.total}`);
-                ctx.set("Content-Length", String(data.length));
-                ctx.status = 206;
-                return data.stream;
-            }
+        if (video) {
+            ctx.set("Accept-Ranges", "bytes");
+            ctx.set("Content-Range", `bytes ${video.start}-${video.end}/${video.total}`);
+            ctx.set("Content-Length", String(video.length));
+            ctx.status = 206;
+            return video.stream;
         }
     }
 
