@@ -1,5 +1,7 @@
+// deno-lint-ignore-file no-explicit-any
 import config from "./config.ts";
 import { delay, fs } from "./deps.ts";
+import { MediaInfo } from "./types.ts";
 
 const textDecoder = new TextDecoder();
 function parseFormat(stdout: Uint8Array) {
@@ -13,6 +15,44 @@ function parseFormat(stdout: Uint8Array) {
  * @Since 2023-09-09
  */
 export const ffmpeg = {
+    mediainfo(input: string): MediaInfo {
+        const ffprobe = new Deno.Command("ffprobe", {
+            args: ["-i", input, "-v", "quiet", "-print_format", "json", "-show_format", "-show_streams"],
+        });
+
+        const { streams, format } = JSON.parse(textDecoder.decode(ffprobe.outputSync().stdout));
+        const mediaInfo: MediaInfo = {};
+
+        if (format) {
+            Object.assign(mediaInfo, {
+                size: parseInt(format.size),
+                duration: parseFloat(format.duration),
+                bitRate: parseInt(format.bit_rate),
+            });
+        }
+        if (streams) {
+            const vs = streams.find((v: any) => v.codec_type == "video");
+            const fr = vs.r_frame_rate.split("/");
+            const fps = (fr[0] / fr[1]).toFixed(2);
+            mediaInfo.video = {
+                codec: vs.codec_name,
+                width: vs.width,
+                height: vs.height,
+                aspectRatio: vs.display_aspect_ratio,
+                frameRate: parseFloat(fps),
+                bitRate: parseInt(vs.bit_rate),
+            };
+            const as = streams.find((v: any) => v.codec_type == "audio");
+            mediaInfo.audio = {
+                codec: as.codec_name,
+                channels: as.channels,
+                sampleRate: parseInt(as.sample_rate),
+                bitRate: parseInt(as.bit_rate),
+            };
+        }
+        return mediaInfo;
+    },
+
     // -ss放在最前面表示截取关键帧，可显著加快执行速度
     capture(input: string, output: string): void {
         const ffprobe = new Deno.Command("ffprobe", {

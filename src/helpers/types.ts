@@ -25,6 +25,26 @@ export type Preferences = {
     codify: boolean;
 };
 
+export type MediaInfo = {
+    size?: number;
+    duration?: number;
+    bitRate?: number;
+    video?: {
+        codec: string;
+        aspectRatio: string;
+        width: number;
+        height: number;
+        frameRate: number;
+        bitRate: number;
+    };
+    audio?: {
+        codec: string;
+        channels: number;
+        sampleRate: number;
+        bitRate: number;
+    };
+};
+
 export type Movie = {
     id: string;
     code: string;

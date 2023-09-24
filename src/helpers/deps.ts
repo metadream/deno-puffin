@@ -1,6 +1,6 @@
 // Framework
 export * from "https://deno.land/x/spring@0.3.5/mod.ts";
-export * from "https://deno.land/x/helper@0.0.3/mod.ts";
+export * from "https://deno.land/x/helper@0.0.5/mod.ts";
 
 // Standard
 export * as path from "https://deno.land/std@0.200.0/path/mod.ts";
