@@ -26,7 +26,7 @@ export class VideoController {
                 ctx.set("Content-Range", `bytes ${data.start}-${data.end}/${data.total}`);
                 ctx.set("Content-Length", String(data.length));
                 ctx.status = 206;
-                return data.buff;
+                return data.stream;
             }
         }
     }

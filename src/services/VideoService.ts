@@ -29,7 +29,7 @@ export class VideoService {
     }
 
     // 根据Range请求头获取视频流
-    streaming(id: string, range: string | null): Record<string, Uint8Array | number> | undefined {
+    streaming(id: string, range: string | null): Record<string, number | ReadableStream> | undefined {
         if (!range) return;
         const movie = this.movieService.get(id);
         if (!movie) {
@@ -47,12 +47,9 @@ export class VideoService {
         end = end == 1 ? 1 : Math.min(start + config.VIDEO_CHUNK_SIZE, total - 1);
         const length = end - start + 1;
 
-        const file = Deno.openSync(source);
+        const file = Deno.openSync(source, { read: true });
         Deno.seekSync(file.rid, start, Deno.SeekMode.Start);
-        const buff = new Uint8Array(length);
-        file.readSync(buff);
-        file.close();
-        return { buff, start, end, total, length };
+        return { start, end, total, length, stream: file.readable };
     }
 
     // 页面刷新或关闭后的清理
