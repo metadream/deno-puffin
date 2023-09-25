@@ -11,6 +11,13 @@ export class ErrorController {
     @Autowired
     settingService!: SettingService;
 
+    constructor() {
+        addEventListener("unhandledrejection", (e) => {
+            console.error(e.reason);
+            e.preventDefault();
+        });
+    }
+
     @ErrorHandler
     async error(ctx: Context, err: Error) {
         const error = {

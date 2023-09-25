@@ -18,6 +18,8 @@ export class MovieService {
     @Autowired
     movieRepo!: MovieRepo;
 
+    // 异步错误
+    private rejectionError?: Error;
     // 扫描状态
     private scanStatus: ScanStatus = {
         totalFiles: 0,
@@ -87,6 +89,11 @@ export class MovieService {
 
     // 获取扫描状态
     status(): ScanStatus {
+        const error = this.rejectionError;
+        if (error) {
+            this.rejectionError = undefined;
+            throw error;
+        }
         return this.scanStatus;
     }
 
@@ -99,6 +106,10 @@ export class MovieService {
         await this.scanLibrary();
         this.genCovers().then(() => {
             this.scanStatus.completed = true;
+        }).catch((e) => {
+            this.scanStatus.completed = true;
+            this.rejectionError = e;
+            throw e;
         });
     }
 

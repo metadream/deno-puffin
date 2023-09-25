@@ -292,15 +292,11 @@ function polling() {
 
   this.timer = setInterval((func = () => {
     Quick.http.get('/status').then(res => {
-      if (!res) return;
+      if (!res) return stopPolling();
 
       $scanBtn.innerHTML = `正在扫描... ${res.processed}/${res.totalMovies}`;
       if (res.completed === true) {
-        $scanBtn.disabled = false;
-        $scanBtn.innerHTML = '扫描媒体库';
-        clearInterval(this.timer);
-        this.timer = null;
-
+        stopPolling();
         Quick.alert(`<b>扫描完成！</b><br><br>
           - 共扫描 ${res.totalFiles} 个文件<br>
           - 发现 ${res.totalMovies} 个媒体文件<br>
@@ -313,6 +309,15 @@ function polling() {
     });
     return func;
   })(), 500);
+}
+
+function stopPolling() {
+  $scanBtn.disabled = false;
+  $scanBtn.innerHTML = '扫描媒体库';
+  if (this.timer) {
+    clearInterval(this.timer);
+    this.timer = null;
+  }
 }
 
 function turnPage(pageIndex) {
