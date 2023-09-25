@@ -88,7 +88,7 @@ export class MovieRepo {
     }
 
     // 批量删除记录
-    delete(ids: string[]): number {
+    delete(ids: Set<string>): number {
         const stmt = db.prepare(`DELETE FROM movie WHERE id = :id`);
         let count = 0;
         const runTransaction = db.transaction((_ids) => {

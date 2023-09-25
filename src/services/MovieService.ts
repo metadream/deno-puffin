@@ -113,20 +113,30 @@ export class MovieService {
         });
     }
 
-    // 清除视频路径对应文件不存在的元数据
+    // 清除视频路径对应文件不存在的元数据、封面、播放列表
     private async purgeMetadata(): Promise<void> {
         const movies = this.movieRepo.queryAll();
         const library = await this.settingService.getLibrary();
 
-        const ids = [];
+        const ids = new Set<string>();
         for (const movie of movies) {
             if (!movie.videoPath.startsWith(library)) {
-                ids.push(movie.id);
+                ids.add(movie.id);
             } else if (!fs.existsSync(movie.videoPath)) {
-                ids.push(movie.id);
+                ids.add(movie.id);
             }
         }
         this.scanStatus.deleted = this.movieRepo.delete(ids);
+        for (const id of ids) {
+            const coverPath = path.join(config.COVER_HOME, id);
+            const playlistPath = path.join(config.TRANSCODE_HOME, id + ".m3u8");
+            if (fs.existsSync(coverPath)) {
+                Deno.removeSync(coverPath);
+            }
+            if (fs.existsSync(playlistPath)) {
+                Deno.removeSync(playlistPath);
+            }
+        }
     }
 
     // 截取视频帧生成封面
