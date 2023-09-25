@@ -4,10 +4,6 @@ import { delay, fs } from "./deps.ts";
 import { MediaInfo } from "./types.ts";
 
 const textDecoder = new TextDecoder();
-function parseFormat(stdout: Uint8Array) {
-    const json = JSON.parse(textDecoder.decode(stdout));
-    return json.format || json;
-}
 
 /**
  * FFMPEG服务
