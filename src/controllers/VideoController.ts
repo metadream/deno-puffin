@@ -40,7 +40,7 @@ export class VideoController {
     // 接口：获取HLS切片视频流
     @Get("/:id\\.ts")
     transcode(ctx: Context) {
-        return Deno.openSync(path.join(config.TRANSCODE_HOME, ctx.params.id + ".ts")).readable;
+        return Deno.readFileSync(path.join(config.TRANSCODE_HOME, ctx.params.id + ".ts"));
     }
 
     // 接口：终止转码进程并清理切片
