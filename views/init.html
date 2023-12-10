@@ -5,26 +5,16 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no"/>
   <link rel="icon" href="/assets/favicon.svg"/>
-  <link rel="stylesheet" href="/assets/override@1.1.1.css"/>
+  <script src="//cdn.unpkg.net/thyme@0.0.4/dist/thyme.js"></script>
   <link rel="stylesheet" href="/assets/app.css"/>
-  <script src="/assets/quick@1.1.1.js"></script>
   <title>初始化 - {{= appName }}</title>
 </head>
 
 <body class="layout-center">
   <div class="front-panel" style="width:490px">
-    <div class="quick-field required">
-      <label>管理员账号</label>
-      <input type="text" name="username" maxlength="20" data-message="请输入管理员账号" required/>
-    </div>
-    <div class="quick-field required">
-      <label>管理员密码</label>
-      <input type="password" name="password" maxlength="20" data-message="请输入管理员密码" required/>
-    </div>
-    <div class="quick-field required">
-      <label>媒体库路径</label>
-      <input type="text" name="library" maxlength="100" data-message="请输入媒体库路径" required/>
-    </div>
+    <th-field label="管理员账号" name="username" maxlength="20" required></th-field>
+    <th-field label="管理员密码" type="password" name="password" maxlength="20" required></th-field>
+    <th-field label="媒体库路径" name="library" maxlength="100" required></th-field>
 
     <div style="margin-top:20px">
       可选元数据属性<br>
@@ -40,19 +30,22 @@
       <label><input type="checkbox" name="codify" value="1"/>使用编号对媒体文件重命名</label>
       <div class="tiny-title">勾选此项后，修改元数据编号时将会同步修改媒体文件名</div>
     </div>
-    <button onclick="init(this)">初始化</button>
+    <th-button onclick="init(this)">初始化</th-button>
   </div>
 </body>
 </html>
 
 <script>
 async function init(btn) {
-  const data = Quick.form.getJsonObject('.front-panel');
+  const data = Thyme.form.getJsonObject('.front-panel');
   if (!data) return;
 
-  btn.disable();
-  let res = await Quick.http.post('/init', data);
-  btn.enable();
-  if (res) location.href = '/metadata?init';
+  try {
+    btn.loading = true;
+    await Thyme.http.post('/init', data);
+    location.href = '/metadata?init';
+  } finally {
+    btn.loading = false;
+  }
 }
 </script>

@@ -5,35 +5,32 @@
 {{< content }}
 <main>
   <div class="front-panel">
-    <div class="quick-field">
-      <label>账号</label>
-      <input type="text" name="username" maxlength="20" data-message="请输入账号" required autofocus/>
-    </div>
-    <div class="quick-field">
-      <label>密码</label>
-      <input type="password" name="password" maxlength="20" data-message="请输入密码" required/>
-    </div>
-    <button>登录</button>
+    <th-field label="账号" name="username" maxlength="10" required autofocus></th-field>
+    <th-field label="密码" name="password" maxlength="10" type="password" required></th-field>
+    <th-button>登录</th-button>
   </div>
 </main>
 {{< }}
 
 <script>
-const $username = Quick.query('[name="username"]');
-const $password = Quick.query('[name="password"]');
-const $loginBtn = Quick.query('button');
+const $username = document.querySelector('[name="username"]');
+const $password = document.querySelector('[name="password"]');
+const $loginBtn = document.querySelector('th-button');
 $loginBtn.onclick = login;
 $username.onkeyup = $password.onkeyup = function(e) {
   if (e.keyCode === 13) login();
 };
 
 async function login() {
-  const data = Quick.form.getJsonObject('.front-panel');
+  const data = Thyme.form.getJsonObject('.front-panel');
   if (!data) return;
 
-  $loginBtn.disable();
-  const res = await Quick.http.post('/login', data);
-  $loginBtn.enable();
-  if (res) location.reload();
+  try {
+    $loginBtn.loading = true;
+    await Thyme.http.post('/login', data);
+    location.reload();
+  } finally {
+    $loginBtn.loading = false;
+  }
 }
 </script>

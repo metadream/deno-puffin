@@ -6,7 +6,7 @@
 <main class="detail">
 
   <div class="thread">
-    <h2>{{= movie.title }}</h2>
+    <h3>{{= movie.title }}</h3>
     <div class="tiny-title">
       <span>{{= movie.rDate }}</span>
       <span>{{= formatBytes(movie.videoSize) }}</span>
@@ -106,7 +106,7 @@
 {{< }}
 
 <script>
-const video = Quick.query('video');
+const video = document.querySelector('video');
 video.setAttribute('preload', 'auto');
 
 document.addEventListener('keyup', function(e) {
@@ -119,7 +119,7 @@ document.addEventListener('keyup', function(e) {
 
 video.on('error', function() {
   if (this.transcoded) {
-    Quick.error('不支持的视频格式');
+    Thyme.error('不支持的视频格式');
   } else {
     transcode();
     this.transcoded = true;
@@ -134,7 +134,7 @@ function transcode() {
     hls.attachMedia(video);
     hls.on(Hls.Events.MANIFEST_PARSED, () => video.play());
     hls.on(Hls.Events.ERROR, (event, data) => {
-      if (data.fatal) Quick.error('视频转码发生错误');
+      if (data.fatal) Thyme.error('视频转码发生错误');
     });
   } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
     video.src = source;

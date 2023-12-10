@@ -58,7 +58,7 @@
 
 <script>
 const params = new URLSearchParams(location.search);
-const $search = Quick.query('.search-text');
+const $search = document.querySelector('.search-text');
 $search.value = params.get('q');
 
 function search() {
