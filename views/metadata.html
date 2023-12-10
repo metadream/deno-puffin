@@ -32,7 +32,7 @@
       {{? hasMetafield('quality') }}<td>{{= quality[movie.quality] || '' }}</td>{{? }}
       {{? hasMetafield('censorship') }}<td>{{= censorship[movie.censorship] || '' }}</td>{{? }}
       <td style="text-align:right">{{= formatBytes(movie.videoSize) }}</td>
-      <td>{{? movie.starred }}<img src="/assets/circle.svg"/>{{? }}</td>
+      <td style="text-align:center">{{? movie.starred }}<img src="/assets/circle.svg"/>{{? }}</td>
     </tr>
     {{~ }}
   </table>
