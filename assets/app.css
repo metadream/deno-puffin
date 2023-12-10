@@ -494,8 +494,9 @@ main.detail .tags a {
 }
 
 .error-panel h1 {
-  margin: 0;
+  font-weight: 700;
   font-size: 10rem;
+  line-height: 1.2;
   color: var(--lineColor);
 }
 
